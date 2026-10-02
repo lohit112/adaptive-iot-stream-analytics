@@ -6,45 +6,52 @@
 <title>Adaptive IoT Stream Processing Dashboard</title>
 <style>
   :root {
-    --bg: #090d16;
-    --bg-card: #111827;
-    --bg-card-sub: #1a2234;
-    --border: #233149;
-    --border-bright: #3b82f6;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --accent-glow: rgba(56, 189, 248, 0.18);
-    --good: #4ade80;
-    --good-bg: rgba(74, 222, 128, 0.12);
-    --bad: #f87171;
-    --bad-bg: rgba(248, 113, 113, 0.12);
-    --warn: #fbbf24;
-    --purple: #c084fc;
+    --bg: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-card-sub: #f1f5f9;
+    --border: #e2e8f0;
+    --border-bright: #0284c7;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --muted: #64748b;
+    --accent: #0284c7;
+    --accent-hover: #0369a1;
+    --accent-glow: rgba(2, 132, 199, 0.12);
+    --good: #16a34a;
+    --good-bg: #f0fdf4;
+    --good-border: #bbf7d0;
+    --bad: #dc2626;
+    --bad-bg: #fef2f2;
+    --bad-border: #fecaca;
+    --warn: #d97706;
+    --warn-bg: #fffbeb;
+    --brand-blue: #0284c7;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.5;
-    padding-bottom: 50px;
+    padding-bottom: 60px;
+    -webkit-font-smoothing: antialiased;
   }
   header {
-    background: #0d1322;
+    background: #ffffff;
     border-bottom: 1px solid var(--border);
-    padding: 16px 28px;
+    padding: 16px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   }
   .header-left h1 {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: #0f172a;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -64,45 +71,46 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 9999px;
     font-size: 12px;
     font-weight: 600;
     border: 1px solid var(--border);
     background: var(--bg-card);
+    color: #334155;
   }
   .badge-pulse {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--good);
-    box-shadow: 0 0 8px var(--good);
+    box-shadow: 0 0 6px var(--good);
   }
   .badge-transport {
-    background: #172554;
-    border-color: #1e40af;
-    color: #93c5fd;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
   }
 
   .nav-tabs {
     display: flex;
     gap: 8px;
-    background: #0d1322;
+    background: #ffffff;
     border-bottom: 1px solid var(--border);
-    padding: 0 28px;
+    padding: 0 32px;
   }
   .tab-btn {
     background: transparent;
     color: var(--muted);
     border: none;
     border-bottom: 2px solid transparent;
-    padding: 12px 18px;
+    padding: 14px 20px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .tab-btn:hover { color: var(--text); }
+  .tab-btn:hover { color: #0f172a; }
   .tab-btn.active {
     color: var(--accent);
     border-bottom-color: var(--accent);
@@ -111,7 +119,7 @@
   main {
     max-width: 1440px;
     margin: 24px auto 0;
-    padding: 0 28px;
+    padding: 0 32px;
   }
   .tab-pane { display: none; }
   .tab-pane.active { display: block; }
@@ -120,21 +128,22 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
   }
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
   }
   .card-title {
     font-size: 16px;
     font-weight: 700;
-    color: #fff;
+    color: #0f172a;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -155,17 +164,17 @@
     .upload-grid { grid-template-columns: 1fr; }
   }
   .dropzone {
-    border: 2px dashed var(--border);
+    border: 2px dashed #cbd5e1;
     border-radius: 10px;
-    padding: 24px;
+    padding: 28px;
     text-align: center;
     cursor: pointer;
-    background: #0f1627;
+    background: #f8fafc;
     transition: all 0.2s;
   }
   .dropzone:hover, .dropzone.dragover {
     border-color: var(--accent);
-    background: #141f36;
+    background: #f0f9ff;
   }
   .quick-buttons {
     display: flex;
@@ -175,47 +184,55 @@
   }
   button.btn {
     background: var(--accent);
-    color: #032b43;
-    font-weight: 700;
+    color: #0f172afff;
+    font-weight: 600;
     border: none;
     border-radius: 8px;
-    padding: 9px 16px;
+    padding: 9px 18px;
     font-size: 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     transition: all 0.15s;
+    box-shadow: 0 1px 2px rgba(2, 132, 199, 0.2);
   }
   button.btn:hover {
-    filter: brightness(1.1);
+    background: var(--accent-hover);
     transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.25);
   }
   button.btn-secondary {
-    background: var(--bg-card-sub);
-    color: var(--text);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   button.btn-secondary:hover {
-    background: #222f46;
+    background: #f1f5f9;
+    color: #0f172a;
   }
   button.btn-success {
     background: var(--good);
-    color: #064e3b;
+    color: #0f172afff;
+    box-shadow: 0 1px 2px rgba(22, 163, 74, 0.2);
+  }
+  button.btn-success:hover {
+    background: #15803d;
   }
 
   .profile-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
+    gap: 12px;
   }
   .stat-box {
-    background: var(--bg-card-sub);
+    background: #f8fafc;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 12px 14px;
   }
-  .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+  .stat-val { font-size: 18px; font-weight: 700; color: #0f172a; }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
   /* Pipeline Architecture visualizer */
@@ -223,30 +240,30 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 8px;
     overflow-x: auto;
     padding: 10px 0;
   }
   .stage-box {
     flex: 1;
     min-width: 95px;
-    background: var(--bg-card-sub);
+    background: #f8fafc;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px 8px;
+    padding: 12px 8px;
     text-align: center;
     position: relative;
     transition: all 0.2s;
   }
-  .stage-box .stage-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .stage-box .stage-name { font-size: 12px; font-weight: 700; color: #0f172a; }
   .stage-box .stage-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
   .stage-box.active {
     border-color: var(--accent);
-    background: #0f2744;
-    box-shadow: 0 0 12px var(--accent-glow);
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
   }
   .stage-arrow {
-    color: var(--border);
+    color: #94a3b8;
     font-size: 14px;
     font-weight: 700;
   }
@@ -256,15 +273,15 @@
     margin: 16px 0;
   }
   .progress-bar-bg {
-    background: #0e1726;
-    border: 1px solid var(--border);
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
     border-radius: 9999px;
     height: 12px;
     overflow: hidden;
     position: relative;
   }
   .progress-bar-fill {
-    background: linear-gradient(90deg, #38bdf8, #4ade80);
+    background: linear-gradient(90deg, #0284c7, #16a34a);
     height: 100%;
     width: 0%;
     border-radius: 9999px;
@@ -285,12 +302,12 @@
     gap: 12px;
   }
   .kpi-card {
-    background: var(--bg-card-sub);
+    background: #f8fafc;
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 14px;
+    padding: 16px;
   }
-  .kpi-card .kpi-num { font-size: 22px; font-weight: 700; color: #fff; }
+  .kpi-card .kpi-num { font-size: 22px; font-weight: 700; color: #0f172a; }
   .kpi-card .kpi-num.good { color: var(--good); }
   .kpi-card .kpi-num.warn { color: var(--warn); }
   .kpi-card .kpi-num.bad { color: var(--bad); }
@@ -306,16 +323,18 @@
     .chart-grid { grid-template-columns: 1fr; }
   }
   .chart-box {
-    background: var(--bg-card-sub);
+    background: #ffffff;
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 16px;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   }
-  .chart-box h3 { font-size: 13px; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  .chart-box h3 { font-size: 13px; color: #475569; margin-bottom: 12px; font-weight: 600; }
   canvas {
     width: 100%;
     height: 220px;
     display: block;
+    background: #ffffff;
   }
 
   /* Table styling */
@@ -325,7 +344,7 @@
     font-size: 12.5px;
   }
   th, td {
-    padding: 8px 12px;
+    padding: 10px 14px;
     text-align: right;
     border-bottom: 1px solid var(--border);
   }
@@ -334,16 +353,18 @@
     text-align: left;
   }
   th {
-    background: #141c2c;
-    color: var(--muted);
+    background: #f8fafc;
+    color: #475569;
     font-weight: 600;
+    border-bottom: 2px solid var(--border);
   }
   tbody tr:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: #f8fafc;
   }
   .badge-exact {
     background: var(--good-bg);
     color: var(--good);
+    border: 1px solid var(--good-border);
     padding: 3px 8px;
     border-radius: 4px;
     font-weight: 700;
@@ -351,6 +372,7 @@
   .badge-mismatch {
     background: var(--bad-bg);
     color: var(--bad);
+    border: 1px solid var(--bad-border);
     padding: 3px 8px;
     border-radius: 4px;
     font-weight: 700;
@@ -361,15 +383,15 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    padding: 16px 20px;
+    padding: 18px 24px;
     border-radius: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     background: var(--good-bg);
-    border: 1px solid rgba(74, 222, 128, 0.3);
+    border: 1px solid var(--good-border);
   }
   .correctness-banner.mismatch {
     background: var(--bad-bg);
-    border-color: rgba(248, 113, 113, 0.3);
+    border-color: var(--bad-border);
   }
   .correctness-verdict {
     font-size: 26px;
@@ -381,29 +403,34 @@
   }
   .correctness-detail {
     font-size: 13px;
-    color: var(--text);
+    color: #1e293b;
   }
 
   /* Research tab banner */
   .research-banner {
-    background: #1e293b;
-    border-left: 4px solid var(--purple);
-    padding: 12px 18px;
+    background: #eff6ff;
+    border-left: 4px solid var(--accent);
+    padding: 14px 20px;
     border-radius: 6px;
     margin-bottom: 20px;
     font-size: 13px;
-    color: #cbd5e1;
+    color: #1e40af;
   }
 
   /* Select and inputs */
   select {
-    background: var(--bg-card-sub);
-    color: var(--text);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 13px;
     outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
   }
 </style>
 </head>
@@ -464,7 +491,7 @@
         </div>
 
         <div class="stat-box" style="display:flex; flex-direction:column; justify-content:space-between">
-          <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#fff" id="profileHeader">
+          <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#0f172a" id="profileHeader">
             Dataset Profile: None loaded
           </div>
           <div class="profile-stats" id="profileStats">
@@ -487,8 +514,8 @@
           STREAM ARRIVAL ORDER VS EVENT-TIME ORDER (First 5 records):
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-          <div style="background:#090d16; border:1px solid var(--border); border-radius:6px; padding:8px" id="arrivalTable"></div>
-          <div style="background:#090d16; border:1px solid var(--border); border-radius:6px; padding:8px" id="eventTimeTable"></div>
+          <div style="background:var(--bg-card-sub); border:1px solid var(--border); border-radius:6px; padding:8px" id="arrivalTable"></div>
+          <div style="background:var(--bg-card-sub); border:1px solid var(--border); border-radius:6px; padding:8px" id="eventTimeTable"></div>
         </div>
       </div>
     </div>
@@ -658,7 +685,7 @@
       </div>
 
       <div style="overflow-x:auto">
-        <div style="font-size:13px; font-weight:700; margin-bottom:8px; color:#fff">Top Anomalous Windows Drill-Down:</div>
+        <div style="font-size:13px; font-weight:700; margin-bottom:8px; color:#0f172a">Top Anomalous Windows Drill-Down:</div>
         <table>
           <thead>
             <tr>
@@ -742,13 +769,13 @@ async function checkSystem() {
     const transportBadge = document.getElementById("transportBadge");
     transportBadge.textContent = "Transport: " + data.transport_label;
     if (data.kafka_available) {
-      transportBadge.style.background = "#064e3b";
-      transportBadge.style.borderColor = "#059669";
-      transportBadge.style.color = "#a7f3d0";
+      transportBadge.style.background = "#dcfce7";
+      transportBadge.style.borderColor = "#86efac";
+      transportBadge.style.color = "#15803d";
     } else {
-      transportBadge.style.background = "#1e293b";
-      transportBadge.style.borderColor = "#334155";
-      transportBadge.style.color = "#94a3b8";
+      transportBadge.style.background = "#f1f5f9";
+      transportBadge.style.borderColor = "#cbd5e1";
+      transportBadge.style.color = "#475569";
     }
 
     if (data.dataset_loaded && !currentProfile) {
@@ -1129,7 +1156,7 @@ function renderThroughputChart(series) {
   const y = val => pad.t + (1 - val / maxVal) * (h - pad.t - pad.b);
 
   // Grid
-  ctx.strokeStyle = "#1e293b";
+  ctx.strokeStyle = "#e2e8f0";
   ctx.fillStyle = "#64748b";
   ctx.font = "10px sans-serif";
   for (let i = 0; i <= 3; i++) {
@@ -1165,7 +1192,7 @@ function renderStateChart(series) {
   const y = val => pad.t + (1 - val / maxHot) * (h - pad.t - pad.b);
 
   // Grid
-  ctx.strokeStyle = "#1e293b";
+  ctx.strokeStyle = "#e2e8f0";
   ctx.fillStyle = "#64748b";
   ctx.font = "10px sans-serif";
   for (let i = 0; i <= 3; i++) {
@@ -1199,9 +1226,9 @@ function renderStateChart(series) {
 
   // Legend
   ctx.fillStyle = "#f97316"; ctx.fillRect(w - 140, 10, 10, 10);
-  ctx.fillStyle = "#e2e8f0"; ctx.textAlign = "left"; ctx.fillText("Hot State", w - 125, 18);
+  ctx.fillStyle = "#0f172a"; ctx.textAlign = "left"; ctx.fillText("Hot State", w - 125, 18);
   ctx.fillStyle = "#38bdf8"; ctx.fillRect(w - 70, 10, 10, 10);
-  ctx.fillStyle = "#e2e8f0"; ctx.fillText("Archive", w - 55, 18);
+  ctx.fillStyle = "#0f172a"; ctx.fillText("Archive", w - 55, 18);
 }
 
 function renderAnomalyHistogram(bins) {
@@ -1214,7 +1241,7 @@ function renderAnomalyHistogram(bins) {
   const n = bins.length;
   const bw = (w - pad.l - pad.r) / n * 0.8;
 
-  ctx.strokeStyle = "#1e293b";
+  ctx.strokeStyle = "#e2e8f0";
   ctx.fillStyle = "#64748b";
   ctx.font = "10px sans-serif";
 
@@ -1246,7 +1273,7 @@ function renderLatenessChart(latenessList) {
   const x = idx => pad.l + (idx / n) * (w - pad.l - pad.r);
   const y = val => pad.t + (1 - val / maxVal) * (h - pad.t - pad.b);
 
-  ctx.strokeStyle = "#a855f7";
+  ctx.strokeStyle = "#0d9488";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   latenessList.forEach((val, idx) => {
@@ -1287,8 +1314,8 @@ let rsKey = null, scenario = null, metric = null, aspect = "state";
 
 const MECH_ORDER = ["cmix","fixed2","fixed5","fixed10","aloa","maso","full","earm_agg"];
 const COLORS = {
-  cmix:"#94a3b8", fixed2:"#f59e0b", fixed5:"#f97316", fixed10:"#ef4444",
-  aloa:"#38bdf8", maso:"#818cf8", full:"#4ade80", earm_agg:"#e879f9"
+  cmix:"#64748b", fixed2:"#f59e0b", fixed5:"#ea580c", fixed10:"#dc2626",
+  aloa:"#0284c7", maso:"#2563eb", full:"#16a34a", earm_agg:"#0d9488"
 };
 
 const METRICS = {
@@ -1420,7 +1447,7 @@ function renderResearchChart(sc, mechs) {
     ctx.fillStyle = COLORS[m] || "#38bdf8";
     ctx.fillRect(bx, by, bw, hh);
 
-    ctx.fillStyle = "#e2e8f0";
+    ctx.fillStyle = "#0f172a";
     ctx.textAlign = "center";
     ctx.fillText(fmt(v, METRICS[metric].unit), bx + bw / 2, by - 4);
 
