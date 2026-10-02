@@ -1,0 +1,28 @@
+# Python virtual environment
+.venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local datasets
+data/canonical/
+data/manifests/
+
+# Large/generated experiment artifacts
+results/
+
+# Local experiment/runtime directories
+experiments/
+
+# Logs
+*.log
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
+scratch/

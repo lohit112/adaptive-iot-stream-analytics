@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "description": "Controlled arrival-order scenarios for BDA streaming experiments",
+  "source": "hdfs://localhost:9000/bda/canonical/iot_events",
+  "event_time_column": "Time",
+  "event_identity": [
+    "Time",
+    "DeviceId",
+    "Sensor",
+    "Value"
+  ],
+  "scenarios": {
+    "baseline": {
+      "description": "Preserve event-time order",
+      "max_delay_seconds": 0,
+      "disorder_probability": 0.0
+    },
+    "mild_ooo": {
+      "description": "Low-intensity out-of-order delivery",
+      "max_delay_seconds": 2,
+      "disorder_probability": 0.10
+    },
+    "moderate_ooo": {
+      "description": "Moderate out-of-order delivery",
+      "max_delay_seconds": 5,
+      "disorder_probability": 0.25
+    },
+    "heavy_ooo": {
+      "description": "High-intensity out-of-order delivery",
+      "max_delay_seconds": 10,
+      "disorder_probability": 0.40
+    },
+    "burst_ooo": {
+      "description": "Bursty delivery with substantial disorder",
+      "max_delay_seconds": 20,
+      "disorder_probability": 0.50
+    }
+  },
+  "random_seed": 20260826
+}

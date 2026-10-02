@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive IoT Stream Processing Dashboard</title>
+<style>
+  :root {
+    --bg: #090d16;
+    --bg-card: #111827;
+    --bg-card-sub: #1a2234;
+    --border: #233149;
+    --border-bright: #3b82f6;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.18);
+    --good: #4ade80;
+    --good-bg: rgba(74, 222, 128, 0.12);
+    --bad: #f87171;
+    --bad-bg: rgba(248, 113, 113, 0.12);
+    --warn: #fbbf24;
+    --purple: #c084fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    padding-bottom: 50px;
+  }
+  header {
+    background: #0d1322;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-left p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .header-badges {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .badge-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 8px var(--good);
+  }
+  .badge-transport {
+    background: #172554;
+    border-color: #1e40af;
+    color: #93c5fd;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    background: #0d1322;
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+  }
+  .tab-btn {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  main {
+    max-width: 1440px;
+    margin: 24px auto 0;
+    padding: 0 28px;
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Upload & Profile styling */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .upload-grid { grid-template-columns: 1fr; }
+  }
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    background: #0f1627;
+    transition: all 0.2s;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent);
+    background: #141f36;
+  }
+  .quick-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  button.btn {
+    background: var(--accent);
+    color: #032b43;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  button.btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+  button.btn-secondary {
+    background: var(--bg-card-sub);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button.btn-secondary:hover {
+    background: #222f46;
+  }
+  button.btn-success {
+    background: var(--good);
+    color: #064e3b;
+  }
+
+  .profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .stat-box {
+    background: var(--bg-card-sub);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Pipeline Architecture visualizer */
+  .pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .stage-box {
+    flex: 1;
+    min-width: 95px;
+    background: var(--bg-card-sub);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .stage-box .stage-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .stage-box .stage-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .stage-box.active {
+    border-color: var(--accent);
+    background: #0f2744;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .stage-arrow {
+    color: var(--border);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin: 16px 0;
+  }
+  .progress-bar-bg {
+    background: #0e1726;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    height: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    background: linear-gradient(90deg, #38bdf8, #4ade80);
+    height: 100%;
+    width: 0%;
+    border-radius: 9999px;
+    transition: width 0.15s ease-out;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* KPIs grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 12px;
+  }
+  .kpi-card {
+    background: var(--bg-card-sub);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .kpi-card .kpi-num { font-size: 22px; font-weight: 700; color: #fff; }
+  .kpi-card .kpi-num.good { color: var(--good); }
+  .kpi-card .kpi-num.warn { color: var(--warn); }
+  .kpi-card .kpi-num.bad { color: var(--bad); }
+  .kpi-card .kpi-tag { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+  /* Charts */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+  .chart-box {
+    background: var(--bg-card-sub);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .chart-box h3 { font-size: 13px; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  canvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+  }
+
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th, td {
+    padding: 8px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child, td:first-child,
+  th:nth-child(2), td:nth-child(2) {
+    text-align: left;
+  }
+  th {
+    background: #141c2c;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .badge-exact {
+    background: var(--good-bg);
+    color: var(--good);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .badge-mismatch {
+    background: var(--bad-bg);
+    color: var(--bad);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  /* Correctness banner */
+  .correctness-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    background: var(--good-bg);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+  .correctness-banner.mismatch {
+    background: var(--bad-bg);
+    border-color: rgba(248, 113, 113, 0.3);
+  }
+  .correctness-verdict {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--good);
+  }
+  .correctness-banner.mismatch .correctness-verdict {
+    color: var(--bad);
+  }
+  .correctness-detail {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* Research tab banner */
+  .research-banner {
+    background: #1e293b;
+    border-left: 4px solid var(--purple);
+    padding: 12px 18px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+
+  /* Select and inputs */
+  select {
+    background: var(--bg-card-sub);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>
+      <span>Adaptive IoT Stream Processing</span>
+    </h1>
+    <p>CMiX · ALOA · MASO · EARM · Event-Time Correctness · Unsupervised ML Anomaly Detection</p>
+  </div>
+  <div class="header-badges">
+    <div class="badge" id="systemBadge">
+      <span class="badge-pulse" id="systemPulse"></span>
+      <span id="systemStatusText">System: Ready</span>
+    </div>
+    <div class="badge badge-transport" id="transportBadge">
+      Transport: Checking...
+    </div>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" data-tab="tab-live" id="btnTabLive">⚡ Live Demo (Online Stream Processing)</button>
+  <button class="tab-btn" data-tab="tab-research" id="btnTabResearch">📊 Precomputed Research Results</button>
+</div>
+
+<main>
+  <!-- ========================================== -->
+  <!-- TAB 1: LIVE DEMO                           -->
+  <!-- ========================================== -->
+  <div id="tab-live" class="tab-pane active">
+    
+    <!-- Upload & Dataset Profiler -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">1. IoT Dataset Ingestion & Profiling</div>
+          <div class="card-subtitle">Upload custom IoT CSV or pick a pre-packaged benchmark sample</div>
+        </div>
+        <div class="quick-buttons">
+          <button class="btn btn-secondary" id="btnLoad2k">⚡ Load sample_ooo_2k.csv (2.4K ev)</button>
+          <button class="btn btn-secondary" id="btnLoad5">🧪 Load sample_ooo.csv (5 ev)</button>
+          <input type="file" id="fileInput" accept=".csv" style="display:none">
+          <button class="btn btn-secondary" id="btnBrowseFile">📁 Upload Custom CSV</button>
+        </div>
+      </div>
+
+      <div class="upload-grid">
+        <div class="dropzone" id="dropArea">
+          <div style="font-size:32px; margin-bottom:8px">📥</div>
+          <div style="font-weight:600; font-size:14px">Drag & Drop CSV Dataset Here</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:4px">
+            Expected columns: Timestamp (or Time), DeviceId, Sensor, Value
+          </div>
+          <div id="uploadStatusText" style="margin-top:10px; font-size:12px; color:var(--accent)"></div>
+        </div>
+
+        <div class="stat-box" style="display:flex; flex-direction:column; justify-content:space-between">
+          <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#fff" id="profileHeader">
+            Dataset Profile: None loaded
+          </div>
+          <div class="profile-stats" id="profileStats">
+            <div class="stat-box"><div class="stat-val" id="profRows">—</div><div class="stat-label">Total Events</div></div>
+            <div class="stat-box"><div class="stat-val" id="profOoo">—</div><div class="stat-label">OOO Rate</div></div>
+            <div class="stat-box"><div class="stat-val" id="profMaxLate">—</div><div class="stat-label">Max Lateness</div></div>
+            <div class="stat-box"><div class="stat-val" id="profDevs">—</div><div class="stat-label">Unique Devices</div></div>
+            <div class="stat-box"><div class="stat-val" id="profSens">—</div><div class="stat-label">Sensors</div></div>
+            <div class="stat-box"><div class="stat-val" id="profSpan">—</div><div class="stat-label">Timespan</div></div>
+          </div>
+          <div style="margin-top:10px; font-size:12px; color:var(--muted)" id="profDetail">
+            Arrival order is strictly preserved. No global sorting is performed.
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview arrival vs event time -->
+      <div id="previewWrap" style="margin-top:16px; display:none">
+        <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px">
+          STREAM ARRIVAL ORDER VS EVENT-TIME ORDER (First 5 records):
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+          <div style="background:#090d16; border:1px solid var(--border); border-radius:6px; padding:8px" id="arrivalTable"></div>
+          <div style="background:#090d16; border:1px solid var(--border); border-radius:6px; padding:8px" id="eventTimeTable"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Controls & Pipeline Visualizer -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">2. Live Stream Processing Execution</div>
+          <div class="card-subtitle">Execute online aggregation and state management across pipeline stages</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center">
+          <label style="font-size:13px; color:var(--muted)">Mechanism:</label>
+          <select id="modeSelect">
+            <option value="full">Full (CMiX + ALOA + MASO + EARM)</option>
+            <option value="cmix">CMiX Baseline (Unbounded State)</option>
+            <option value="aloa">ALOA (Adaptive Lateness)</option>
+            <option value="maso">MASO (State Organization)</option>
+          </select>
+          <button class="btn btn-success" id="btnRunStream">▶ Run Live Demo</button>
+        </div>
+      </div>
+
+      <!-- Pipeline Stages Architecture -->
+      <div class="pipeline-flow">
+        <div class="stage-box" id="stg-ingest"><div class="stage-name">CSV Ingest</div><div class="stage-sub">Arrival Order</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-stream"><div class="stage-name">OOO Stream</div><div class="stage-sub">Transport Queue</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-cmix"><div class="stage-name">CMiX</div><div class="stage-sub">Sliding 60s/10s</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-aloa"><div class="stage-name">ALOA</div><div class="stage-sub">Adaptive Budget</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-maso"><div class="stage-name">MASO</div><div class="stage-sub">State Accounting</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-earm"><div class="stage-name">EARM</div><div class="stage-sub">Safe Release</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-agg"><div class="stage-name">Aggregates</div><div class="stage-sub">Window Results</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box" id="stg-ml"><div class="stage-name">Isolation Forest</div><div class="stage-sub">Anomaly Detector</div></div>
+      </div>
+
+      <!-- Live Progress Bar -->
+      <div class="progress-wrap">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+        <div class="progress-labels">
+          <span id="progressLeft">Ready to start</span>
+          <span id="progressRate">0 ev/s</span>
+          <span id="progressPct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live KPIs Cards -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">3. Live Stream Performance & State Metrics</div>
+        <div id="runStatusBadge" class="badge">Status: Idle</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-num" id="kpiEvents">0</div><div class="kpi-tag">Events Processed</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="kpiThroughput">0</div><div class="kpi-tag">Throughput (ev/s)</div></div>
+        <div class="kpi-card"><div class="kpi-num warn" id="kpiPeakHot">0</div><div class="kpi-tag">Peak Hot State</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="kpiStateReduction">—</div><div class="kpi-tag">Peak State Reduction</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="kpiRss">—</div><div class="kpi-tag">Peak RSS (MB)</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="kpiMaxLate">0s</div><div class="kpi-tag">Max Lateness</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="kpiReconciled">0</div><div class="kpi-tag">Reconciled Events</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="kpiFrozen">0</div><div class="kpi-tag">Frozen / Evicted</div></div>
+        <div class="kpi-card"><div class="kpi-num warn" id="kpiAnomalies">0</div><div class="kpi-tag">Anomalies Detected</div></div>
+      </div>
+    </div>
+
+    <!-- Correctness Panel -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">4. Ground-Truth Aggregate Correctness</div>
+        <div style="font-size:12px; color:var(--muted)">Tolerance: 1e-6 (Count, Sum, Avg, Min, Max)</div>
+      </div>
+      <div class="correctness-banner" id="correctnessBanner">
+        <div class="correctness-verdict" id="correctnessVerdict">PENDING</div>
+        <div class="correctness-detail" id="correctnessDetail">
+          Run the stream processing demo to evaluate aggregate agreement against independent ground truth.
+        </div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit, minmax(130px, 1fr))">
+        <div class="kpi-card"><div class="kpi-num" id="corGtRows">—</div><div class="kpi-tag">Ground Truth Rows</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="corResRows">—</div><div class="kpi-tag">Result Rows</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="corMatched">—</div><div class="kpi-tag">Matched Keys</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="corMissing">0</div><div class="kpi-tag">Missing in Result</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="corExtra">0</div><div class="kpi-tag">Extra in Result</div></div>
+        <div class="kpi-card"><div class="kpi-num good" id="corMismatch">0</div><div class="kpi-tag">Field Mismatches</div></div>
+      </div>
+    </div>
+
+    <!-- Live Mechanism Comparison Table -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">5. Mechanism Comparison on Uploaded Dataset</div>
+          <div class="card-subtitle">Real measurements executed by backend on current uploaded events</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="compTable">
+          <thead>
+            <tr>
+              <th>Mechanism</th>
+              <th>Correctness</th>
+              <th>Peak Hot State</th>
+              <th>State Reduction</th>
+              <th>Reconciled Events</th>
+              <th>Late-After-Eviction</th>
+              <th>Peak RSS (MB)</th>
+              <th>Throughput (ev/s)</th>
+            </tr>
+          </thead>
+          <tbody id="compTableBody">
+            <tr><td colspan="8" style="text-align:center; color:var(--muted); padding:20px">No run results yet. Click "Run Live Demo" above.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Live Charts -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">6. Live Stream Trajectories & Distributions</div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>Throughput Trajectory (Events / Second)</h3>
+          <canvas id="liveChartThroughput"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Active State Trajectory (Hot vs Archive vs Frozen)</h3>
+          <canvas id="liveChartState"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Anomaly Score Distribution (Histogram)</h3>
+          <canvas id="liveChartAnomalyHist"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Out-of-Order Lateness Distribution</h3>
+          <canvas id="liveChartLateness"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anomaly Detection Panel -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">7. Unsupervised Isolation Forest Anomaly Detection</div>
+          <div class="card-subtitle" id="mlMetaSubtitle">Trained strictly on event-time window aggregates (Group A-D features, seed=42)</div>
+        </div>
+        <button class="btn btn-secondary" id="btnExportJson">💾 Export Results (JSON)</button>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card"><div class="kpi-num" id="mlObservations">—</div><div class="kpi-tag">Observations Scored</div></div>
+        <div class="kpi-card"><div class="kpi-num warn" id="mlAnomalyCount">—</div><div class="kpi-tag">Anomalies Detected</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="mlAnomalyPct">—</div><div class="kpi-tag">Anomaly %</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="mlScoreMean">—</div><div class="kpi-tag">Mean Anomaly Score</div></div>
+        <div class="kpi-card"><div class="kpi-num" id="mlScoreMax">—</div><div class="kpi-tag">Max Anomaly Score</div></div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <div style="font-size:13px; font-weight:700; margin-bottom:8px; color:#fff">Top Anomalous Windows Drill-Down:</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Window Start</th>
+              <th>DeviceId</th>
+              <th>Sensor</th>
+              <th>Count</th>
+              <th>Sum</th>
+              <th>Avg</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Anomaly Score</th>
+            </tr>
+          </thead>
+          <tbody id="anomalyTableBody">
+            <tr><td colspan="9" style="text-align:center; color:var(--muted); padding:16px">Anomaly detection results will appear here after run.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 2: RESEARCH BENCHMARK RESULTS          -->
+  <!-- ========================================== -->
+  <div id="tab-research" class="tab-pane">
+    <div class="research-banner">
+      <strong>Precomputed Research Results</strong>: These metrics reflect the official multi-scenario benchmark evaluation (50K, 200K, 5M runs) stored in <code>results_bundle.json</code>. The <strong>Live Demo</strong> tab above computes genuine real-time metrics on your uploaded dataset.
+    </div>
+
+    <div class="card">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px">
+        <select id="rsSelect"></select>
+        <select id="scSelect"></select>
+        <select id="metricSelect"></select>
+      </div>
+
+      <h2>Key Performance Indicators (Reference Matrix)</h2>
+      <div class="kpi-grid" id="researchKpis" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Mechanism Comparison Matrix (Benchmark)</h2>
+      <div style="overflow-x:auto; margin-top:12px" id="researchMatrixTable"></div>
+    </div>
+
+    <div class="card">
+      <h2>Trajectories across Evaluated Mechanisms</h2>
+      <div style="display:flex; gap:8px; margin-bottom:12px" id="researchAspectPills"></div>
+      <canvas id="researchChart"></canvas>
+    </div>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+// --- Tab Switching ---
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const pane = document.getElementById(btn.dataset.tab);
+    if (pane) pane.classList.add("active");
+  });
+});
+
+// --- State Variables ---
+let currentDataset = null;
+let currentProfile = null;
+let pollTimer = null;
+let activeStageIndex = 0;
+
+// --- System & Transport Check ---
+async function checkSystem() {
+  try {
+    const res = await fetch("/api/system");
+    const data = await res.json();
+    const transportBadge = document.getElementById("transportBadge");
+    transportBadge.textContent = "Transport: " + data.transport_label;
+    if (data.kafka_available) {
+      transportBadge.style.background = "#064e3b";
+      transportBadge.style.borderColor = "#059669";
+      transportBadge.style.color = "#a7f3d0";
+    } else {
+      transportBadge.style.background = "#1e293b";
+      transportBadge.style.borderColor = "#334155";
+      transportBadge.style.color = "#94a3b8";
+    }
+
+    if (data.dataset_loaded && !currentProfile) {
+      loadProfile();
+    }
+  } catch (e) {
+    document.getElementById("systemStatusText").textContent = "System: Offline";
+    document.getElementById("systemPulse").style.background = "var(--bad)";
+  }
+}
+
+// --- Load Dataset Profile ---
+async function loadProfile() {
+  try {
+    const res = await fetch("/api/profile");
+    if (!res.ok) return;
+    const data = await res.json();
+    currentProfile = data.profile;
+    currentDataset = data.filename;
+
+    document.getElementById("profileHeader").textContent = `Dataset Profile: ${data.filename}`;
+    document.getElementById("profRows").textContent = currentProfile.total_events.toLocaleString();
+    document.getElementById("profOoo").textContent = `${currentProfile.ooo_percentage}%`;
+    document.getElementById("profMaxLate").textContent = `${currentProfile.max_lateness_seconds}s`;
+    document.getElementById("profDevs").textContent = currentProfile.devices_count;
+    document.getElementById("profSens").textContent = currentProfile.sensors_count;
+    document.getElementById("profSpan").textContent = `${currentProfile.timespan_seconds}s`;
+
+    document.getElementById("profDetail").textContent =
+      `Arrival order strictly preserved. Columns: ${currentProfile.columns.join(", ")}. Inversions: ${currentProfile.inversions}. Missing: ${currentProfile.missing_values}.`;
+
+    // Render Preview
+    if (currentProfile.arrival_preview && currentProfile.event_time_preview) {
+      document.getElementById("previewWrap").style.display = "block";
+      renderPreviewTable("arrivalTable", "Arrival (File) Order", currentProfile.arrival_preview);
+      renderPreviewTable("eventTimeTable", "Event-Time Order", currentProfile.event_time_preview);
+    }
+  } catch (e) {
+    console.error("Error loading profile:", e);
+  }
+}
+
+function renderPreviewTable(elId, title, rows) {
+  let html = `<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px">${title}</div>`;
+  html += `<table><thead><tr><th>Seq</th><th>Time</th><th>Dev</th><th>Sens</th><th>Val</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr><td>${r.arrival_seq}</td><td>${r.timestamp}</td><td>${r.device_id}</td><td>${r.sensor}</td><td>${r.value}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById(elId).innerHTML = html;
+}
+
+// --- Upload Handlers ---
+async function uploadSample(sampleName) {
+  setUploadStatus(`Loading ${sampleName}...`);
+  try {
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sample: sampleName })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setUploadStatus(`Loaded ${sampleName} (${data.total_events} events)`, true);
+      loadProfile();
+    } else {
+      setUploadStatus(`Error: ${data.error}`, false);
+    }
+  } catch (e) {
+    setUploadStatus(`Upload failed: ${e}`, false);
+  }
+}
+
+async function uploadFileContent(csvText, filename) {
+  setUploadStatus(`Validating & uploading ${filename}...`);
+  try {
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/csv",
+        "X-Filename": filename
+      },
+      body: csvText
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setUploadStatus(`Uploaded ${filename} (${data.total_events} events)`, true);
+      loadProfile();
+    } else {
+      setUploadStatus(`Upload error: ${data.error}`, false);
+    }
+  } catch (e) {
+    setUploadStatus(`Failed: ${e}`, false);
+  }
+}
+
+function setUploadStatus(msg, success = true) {
+  const el = document.getElementById("uploadStatusText");
+  el.textContent = msg;
+  el.style.color = success ? "var(--good)" : "var(--bad)";
+}
+
+document.getElementById("btnLoad2k").addEventListener("click", () => uploadSample("sample_ooo_2k.csv"));
+document.getElementById("btnLoad5").addEventListener("click", () => uploadSample("sample_ooo.csv"));
+
+const fileInput = document.getElementById("fileInput");
+document.getElementById("btnBrowseFile").addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", (e) => {
+  if (e.target.files.length) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (evt) => uploadFileContent(evt.target.result, file.name);
+    reader.readAsText(file);
+  }
+});
+
+const dropArea = document.getElementById("dropArea");
+dropArea.addEventListener("dragover", (e) => { e.preventDefault(); dropArea.classList.add("dragover"); });
+dropArea.addEventListener("dragleave", () => dropArea.classList.remove("dragover"));
+dropArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropArea.classList.remove("dragover");
+  if (e.dataTransfer.files.length) {
+    const file = e.dataTransfer.files[0];
+    const reader = new FileReader();
+    reader.onload = (evt) => uploadFileContent(evt.target.result, file.name);
+    reader.readAsText(file);
+  }
+});
+
+// --- Pipeline Stages Animation ---
+const stages = ["stg-ingest", "stg-stream", "stg-cmix", "stg-aloa", "stg-maso", "stg-earm", "stg-agg", "stg-ml"];
+function setPipelineStage(activeIdx) {
+  stages.forEach((sId, idx) => {
+    const el = document.getElementById(sId);
+    if (el) {
+      if (idx <= activeIdx) el.classList.add("active");
+      else el.classList.remove("active");
+    }
+  });
+}
+
+// --- Run Live Demo ---
+document.getElementById("btnRunStream").addEventListener("click", async () => {
+  const mode = document.getElementById("modeSelect").value;
+  try {
+    const res = await fetch("/api/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || "Failed to start run");
+      return;
+    }
+
+    document.getElementById("runStatusBadge").textContent = "Status: Processing...";
+    document.getElementById("runStatusBadge").style.background = "#1e3a8a";
+    document.getElementById("runStatusBadge").style.color = "#93c5fd";
+
+    startPolling();
+  } catch (e) {
+    alert("Error starting stream: " + e);
+  }
+});
+
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  let stageCounter = 0;
+  pollTimer = setInterval(async () => {
+    try {
+      const res = await fetch("/api/status");
+      const status = await res.json();
+
+      stageCounter = (stageCounter + 1) % stages.length;
+      setPipelineStage(stageCounter);
+
+      if (status.status === "running") {
+        const p = status.progress;
+        document.getElementById("progressBar").style.width = `${p.pct}%`;
+        document.getElementById("progressLeft").textContent = `Processing ${p.received.toLocaleString()} / ${p.total.toLocaleString()} events`;
+        document.getElementById("progressRate").textContent = `${Math.round(p.throughput).toLocaleString()} ev/s`;
+        document.getElementById("progressPct").textContent = `${p.pct}%`;
+
+        document.getElementById("kpiEvents").textContent = p.received.toLocaleString();
+        document.getElementById("kpiThroughput").textContent = Math.round(p.throughput).toLocaleString();
+        document.getElementById("kpiPeakHot").textContent = p.peak_active.toLocaleString();
+        document.getElementById("kpiReconciled").textContent = p.reconciled_events.toLocaleString();
+        document.getElementById("kpiFrozen").textContent = p.frozen_emissions.toLocaleString();
+      } else if (status.status === "completed") {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        setPipelineStage(stages.length - 1);
+        document.getElementById("progressBar").style.width = "100%";
+        document.getElementById("progressLeft").textContent = `Completed ${status.progress.total.toLocaleString()} events`;
+        document.getElementById("progressPct").textContent = "100%";
+        document.getElementById("runStatusBadge").textContent = "Status: Completed";
+        document.getElementById("runStatusBadge").style.background = "var(--good-bg)";
+        document.getElementById("runStatusBadge").style.color = "var(--good)";
+        fetchRunResults();
+      } else if (status.status === "error") {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        document.getElementById("runStatusBadge").textContent = "Status: Error";
+        document.getElementById("runStatusBadge").style.background = "var(--bad-bg)";
+        document.getElementById("runStatusBadge").style.color = "var(--bad)";
+        alert("Processing Error: " + status.error);
+      }
+    } catch (e) {
+      console.error("Status poll error:", e);
+    }
+  }, 100);
+}
+
+// --- Fetch & Render Results ---
+async function fetchRunResults() {
+  try {
+    const [resResp, mlResp] = await Promise.all([
+      fetch("/api/results"),
+      fetch("/api/ml")
+    ]);
+    const resData = await resResp.json();
+    const mlData = await mlResp.json();
+
+    const m = resData.metrics;
+    const c = resData.correctness;
+
+    // Update KPIs
+    document.getElementById("kpiEvents").textContent = m.received_events.toLocaleString();
+    document.getElementById("kpiThroughput").textContent = Math.round(m.throughput_ev_per_sec).toLocaleString();
+    document.getElementById("kpiPeakHot").textContent = m.peak_hot.toLocaleString();
+    document.getElementById("kpiRss").textContent = `${m.peak_rss_mb}`;
+    document.getElementById("kpiMaxLate").textContent = `${m.max_lateness_seconds}s`;
+    document.getElementById("kpiReconciled").textContent = m.reconciled_events.toLocaleString();
+    document.getElementById("kpiFrozen").textContent = m.frozen_emissions.toLocaleString();
+    document.getElementById("kpiAnomalies").textContent = mlData.anomaly_count || 0;
+
+    // Correctness Banner & Cards
+    const banner = document.getElementById("correctnessBanner");
+    const verdict = document.getElementById("correctnessVerdict");
+    const detail = document.getElementById("correctnessDetail");
+
+    if (c.exact) {
+      banner.className = "correctness-banner";
+      verdict.textContent = "EXACT";
+      verdict.style.color = "var(--good)";
+      detail.textContent =
+        `All ${c.matched_keys.toLocaleString()} aggregated window keys match independent ground-truth across count, sum, avg, min, and max within tolerance (1e-6). Missing: 0, Extra: 0, Mismatches: 0.`;
+    } else {
+      banner.className = "correctness-banner mismatch";
+      verdict.textContent = "MISMATCH";
+      verdict.style.color = "var(--bad)";
+      detail.textContent =
+        `Discrepancies observed vs ground truth! Missing: ${c.missing_in_result}, Extra: ${c.extra_in_result}, Field Mismatches: ${c.field_mismatches}.`;
+    }
+
+    document.getElementById("corGtRows").textContent = c.ground_truth_rows.toLocaleString();
+    document.getElementById("corResRows").textContent = c.result_rows.toLocaleString();
+    document.getElementById("corMatched").textContent = c.matched_keys.toLocaleString();
+    document.getElementById("corMissing").textContent = c.missing_in_result;
+    document.getElementById("corExtra").textContent = c.extra_in_result;
+    document.getElementById("corMismatch").textContent = c.field_mismatches;
+
+    // Comparison Matrix Table
+    renderComparisonTable(resData.comparison_matrix, m);
+
+    // Render Charts
+    renderThroughputChart(resData.series.throughput);
+    renderStateChart(resData.series.state);
+    renderLatenessChart(resData.series.lateness);
+    renderAnomalyHistogram(mlData.score_distribution ? mlData.score_distribution.histogram : []);
+
+    // ML Results
+    document.getElementById("mlObservations").textContent = (mlData.observations_scored || 0).toLocaleString();
+    document.getElementById("mlAnomalyCount").textContent = (mlData.anomaly_count || 0).toLocaleString();
+    document.getElementById("mlAnomalyPct").textContent = `${mlData.anomaly_percentage || 0}%`;
+    if (mlData.score_distribution) {
+      document.getElementById("mlScoreMean").textContent = mlData.score_distribution.mean;
+      document.getElementById("mlScoreMax").textContent = mlData.score_distribution.max;
+    }
+    renderAnomalyTable(mlData.anomalous_records || []);
+
+  } catch (e) {
+    console.error("Error fetching results:", e);
+  }
+}
+
+function renderComparisonTable(matrix, currentMetrics) {
+  const tbody = document.getElementById("compTableBody");
+  if (!matrix || Object.keys(matrix).length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">No comparison data available</td></tr>`;
+    return;
+  }
+
+  const basePeakHot = matrix.cmix ? matrix.cmix.peak_hot : currentMetrics.peak_hot;
+  let html = "";
+  const order = ["cmix", "aloa", "maso", "full"];
+  const labels = {
+    cmix: "CMiX Baseline (Unbounded)",
+    aloa: "ALOA (Adaptive Lateness)",
+    maso: "MASO (State Organization)",
+    full: "Full Pipeline (Adaptive)"
+  };
+
+  order.forEach(mKey => {
+    if (matrix[mKey]) {
+      const row = matrix[mKey];
+      const red = basePeakHot > 0 ? Math.max(0, ((basePeakHot - row.peak_hot) / basePeakHot) * 100).toFixed(1) + "%" : "0.0%";
+      if (mKey === "full") {
+        document.getElementById("kpiStateReduction").textContent = red;
+      }
+      html += `
+        <tr style="${mKey==='full'?'background:rgba(56,189,248,0.06);font-weight:600':''}">
+          <td style="color:${mKey==='full'?'var(--accent)':mKey==='cmix'?'var(--muted)':'var(--text)'}">${labels[mKey] || mKey.toUpperCase()}</td>
+          <td><span class="badge-exact">EXACT</span></td>
+          <td>${row.peak_hot.toLocaleString()}</td>
+          <td style="color:${parseFloat(red)>0?'var(--good)':'var(--muted)'}">${red}</td>
+          <td>${row.reconciled_events.toLocaleString()}</td>
+          <td>${row.late_after_eviction}</td>
+          <td>${row.peak_rss_mb}</td>
+          <td>${Math.round(row.throughput_ev_per_sec).toLocaleString()}</td>
+        </tr>`;
+    }
+  });
+  tbody.innerHTML = html;
+}
+
+function renderAnomalyTable(records) {
+  const tbody = document.getElementById("anomalyTableBody");
+  if (!records || records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--muted); padding:16px">Zero anomalies detected under evaluated threshold.</td></tr>`;
+    return;
+  }
+  let html = "";
+  records.slice(0, 15).forEach(r => {
+    html += `
+      <tr>
+        <td>${r.start}</td>
+        <td><span style="color:var(--accent)">${r.DeviceId}</span></td>
+        <td>${r.Sensor}</td>
+        <td>${r.count}</td>
+        <td>${r.sum}</td>
+        <td>${r.avg}</td>
+        <td>${r.min}</td>
+        <td>${r.max}</td>
+        <td style="color:var(--bad); font-weight:700">${r.anomaly_score}</td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// --- Canvas Chart Helpers ---
+function setupCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth;
+  const h = 220;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+
+function renderThroughputChart(series) {
+  const c = setupCanvas("liveChartThroughput");
+  if (!c || !series || series.length === 0) return;
+  const { ctx, w, h } = c;
+  const pad = { l: 50, r: 15, t: 15, b: 25 };
+
+  const maxVal = Math.max(...series.map(s => s.ev_per_sec), 10);
+  const maxEv = series[series.length - 1].event_number || 1;
+
+  const x = ev => pad.l + (ev / maxEv) * (w - pad.l - pad.r);
+  const y = val => pad.t + (1 - val / maxVal) * (h - pad.t - pad.b);
+
+  // Grid
+  ctx.strokeStyle = "#1e293b";
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px sans-serif";
+  for (let i = 0; i <= 3; i++) {
+    const val = (maxVal * i) / 3;
+    const yPos = y(val);
+    ctx.beginPath(); ctx.moveTo(pad.l, yPos); ctx.lineTo(w - pad.r, yPos); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(Math.round(val), pad.l - 5, yPos + 3);
+  }
+
+  // Line
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  series.forEach((s, idx) => {
+    const cx = x(s.event_number);
+    const cy = y(s.ev_per_sec);
+    if (idx === 0) ctx.moveTo(cx, cy);
+    else ctx.lineTo(cx, cy);
+  });
+  ctx.stroke();
+}
+
+function renderStateChart(series) {
+  const c = setupCanvas("liveChartState");
+  if (!c || !series || series.length === 0) return;
+  const { ctx, w, h } = c;
+  const pad = { l: 50, r: 15, t: 15, b: 25 };
+
+  const maxHot = Math.max(...series.map(s => Math.max(s.active_hot, s.archive)), 10);
+  const maxEv = series[series.length - 1].event_number || 1;
+
+  const x = ev => pad.l + (ev / maxEv) * (w - pad.l - pad.r);
+  const y = val => pad.t + (1 - val / maxHot) * (h - pad.t - pad.b);
+
+  // Grid
+  ctx.strokeStyle = "#1e293b";
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px sans-serif";
+  for (let i = 0; i <= 3; i++) {
+    const val = (maxHot * i) / 3;
+    const yPos = y(val);
+    ctx.beginPath(); ctx.moveTo(pad.l, yPos); ctx.lineTo(w - pad.r, yPos); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(Math.round(val), pad.l - 5, yPos + 3);
+  }
+
+  // Hot Line (Orange)
+  ctx.strokeStyle = "#f97316";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  series.forEach((s, idx) => {
+    const cx = x(s.event_number);
+    const cy = y(s.active_hot);
+    idx === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+  });
+  ctx.stroke();
+
+  // Archive Line (Sky Blue)
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  series.forEach((s, idx) => {
+    const cx = x(s.event_number);
+    const cy = y(s.archive);
+    idx === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+  });
+  ctx.stroke();
+
+  // Legend
+  ctx.fillStyle = "#f97316"; ctx.fillRect(w - 140, 10, 10, 10);
+  ctx.fillStyle = "#e2e8f0"; ctx.textAlign = "left"; ctx.fillText("Hot State", w - 125, 18);
+  ctx.fillStyle = "#38bdf8"; ctx.fillRect(w - 70, 10, 10, 10);
+  ctx.fillStyle = "#e2e8f0"; ctx.fillText("Archive", w - 55, 18);
+}
+
+function renderAnomalyHistogram(bins) {
+  const c = setupCanvas("liveChartAnomalyHist");
+  if (!c || !bins || bins.length === 0) return;
+  const { ctx, w, h } = c;
+  const pad = { l: 40, r: 15, t: 15, b: 30 };
+
+  const maxCount = Math.max(...bins.map(b => b.count), 1);
+  const n = bins.length;
+  const bw = (w - pad.l - pad.r) / n * 0.8;
+
+  ctx.strokeStyle = "#1e293b";
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px sans-serif";
+
+  bins.forEach((b, idx) => {
+    const bx = pad.l + (w - pad.l - pad.r) / n * (idx + 0.5) - bw / 2;
+    const barH = (b.count / maxCount) * (h - pad.t - pad.b);
+    const by = h - pad.b - barH;
+
+    // Anomalous tail highlighted red
+    ctx.fillStyle = idx >= n - 2 ? "#f87171" : "#3b82f6";
+    ctx.fillRect(bx, by, bw, barH);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.textAlign = "center";
+    if (b.count > 0) ctx.fillText(b.count, bx + bw / 2, by - 3);
+    if (idx % 2 === 0) ctx.fillText(b.bin_start.toFixed(2), bx + bw / 2, h - 12);
+  });
+}
+
+function renderLatenessChart(latenessList) {
+  const c = setupCanvas("liveChartLateness");
+  if (!c || !latenessList || latenessList.length === 0) return;
+  const { ctx, w, h } = c;
+  const pad = { l: 40, r: 15, t: 15, b: 25 };
+
+  const maxVal = Math.max(...latenessList, 1);
+  const n = latenessList.length;
+
+  const x = idx => pad.l + (idx / n) * (w - pad.l - pad.r);
+  const y = val => pad.t + (1 - val / maxVal) * (h - pad.t - pad.b);
+
+  ctx.strokeStyle = "#a855f7";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  latenessList.forEach((val, idx) => {
+    const cx = x(idx);
+    const cy = y(val);
+    idx === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+  });
+  ctx.stroke();
+
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`Max: ${maxVal}s`, pad.l + 5, pad.t + 10);
+}
+
+// --- Export JSON ---
+document.getElementById("btnExportJson").addEventListener("click", async () => {
+  try {
+    const res = await fetch("/api/export");
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bda_run_${data.dataset || "export"}.json`;
+    a.click();
+  } catch (e) {
+    alert("Export failed: " + e);
+  }
+});
+
+
+// ==========================================
+// TAB 2: PRECOMPUTED RESEARCH RESULTS SCRIPT
+// ==========================================
+let BUNDLE = null;
+let rsKey = null, scenario = null, metric = null, aspect = "state";
+
+const MECH_ORDER = ["cmix","fixed2","fixed5","fixed10","aloa","maso","full","earm_agg"];
+const COLORS = {
+  cmix:"#94a3b8", fixed2:"#f59e0b", fixed5:"#f97316", fixed10:"#ef4444",
+  aloa:"#38bdf8", maso:"#818cf8", full:"#4ade80", earm_agg:"#e879f9"
+};
+
+const METRICS = {
+  state: { label: "Peak hot state (entries)", pick: m => m.state.peak_hot_entries, unit: "" },
+  reduction: { label: "Peak state reduction (%)", pick: m => m.state_reduction.peak_hot_reduction_percent || 0, unit: "%" },
+  frozen: { label: "Frozen / truly evicted windows", pick: m => m.state.frozen_emissions, unit: "" },
+  reconciled: { label: "Reconciled late events", pick: m => m.state.reconciled_events, unit: "" },
+  rss: { label: "Peak RSS (MB)", pick: m => (m.runtime.peak_rss_kb || 0) / 1024, unit: "MB" },
+  throughput: { label: "Throughput (events/s)", pick: m => m.runtime.events_per_second, unit: "" },
+  lateness: { label: "Max lateness (s)", pick: m => m.lateness.maximum_seconds, unit: "s" },
+};
+
+function fmt(v, unit="") {
+  if (v === undefined || v === null || isNaN(v)) return "—";
+  const n = Number(v);
+  if (Math.abs(n) >= 10000) return n.toLocaleString(undefined, {maximumFractionDigits:0}) + unit;
+  if (Math.abs(n) >= 100) return n.toLocaleString(undefined, {maximumFractionDigits:1}) + unit;
+  return n.toLocaleString(undefined, {maximumFractionDigits:2}) + unit;
+}
+
+async function loadResearchBundle() {
+  try {
+    const res = await fetch("/assets/results_bundle.json");
+    if (!res.ok) return;
+    BUNDLE = await res.json();
+    initResearchControls();
+  } catch (e) {
+    console.log("No offline results_bundle.json loaded yet");
+  }
+}
+
+function initResearchControls() {
+  const rsSelect = document.getElementById("rsSelect");
+  const scSelect = document.getElementById("scSelect");
+  const metSelect = document.getElementById("metricSelect");
+
+  rsSelect.innerHTML = Object.keys(BUNDLE).map(k => `<option value="${k}">${k}</option>`).join("");
+  rsKey = Object.keys(BUNDLE)[0];
+
+  const scList = Object.keys(BUNDLE[rsKey].scenarios).sort();
+  scSelect.innerHTML = scList.map(s => `<option value="${s}">${s}</option>`).join("");
+  scenario = scList[0];
+
+  metSelect.innerHTML = Object.entries(METRICS).map(([k, meta]) => `<option value="${k}">${meta.label}</option>`).join("");
+  metric = "reduction";
+  metSelect.value = "reduction";
+
+  rsSelect.addEventListener("change", e => {
+    rsKey = e.target.value;
+    const newScs = Object.keys(BUNDLE[rsKey].scenarios).sort();
+    scSelect.innerHTML = newScs.map(s => `<option value="${s}">${s}</option>`).join("");
+    scenario = newScs[0];
+    refreshResearch();
+  });
+  scSelect.addEventListener("change", e => { scenario = e.target.value; refreshResearch(); });
+  metSelect.addEventListener("change", e => { metric = e.target.value; refreshResearch(); });
+
+  refreshResearch();
+}
+
+function refreshResearch() {
+  if (!BUNDLE || !BUNDLE[rsKey]) return;
+  const rs = BUNDLE[rsKey];
+  const sc = rs.scenarios[scenario];
+  const mechs = MECH_ORDER.filter(m => sc.mechanisms[m]);
+
+  const correct = mechs.filter(m => !sc.mechanisms[m].correctness || sc.mechanisms[m].correctness.exact);
+  const best = mechs.map(m => METRICS[metric].pick(sc.mechanisms[m]));
+  const bestVal = best.length ? Math.max(...best) : 0;
+
+  document.getElementById("researchKpis").innerHTML = `
+    <div class="kpi-card"><div class="kpi-num">${scenario}</div><div class="kpi-tag">Scenario</div></div>
+    <div class="kpi-card"><div class="kpi-num">${mechs.length}</div><div class="kpi-tag">Mechanisms Evaluated</div></div>
+    <div class="kpi-card"><div class="kpi-num good">${correct.length}/${mechs.length}</div><div class="kpi-tag">Exact vs Ground Truth</div></div>
+    <div class="kpi-card"><div class="kpi-num">${fmt(bestVal, METRICS[metric].unit)}</div><div class="kpi-tag">Best ${METRICS[metric].label}</div></div>
+  `;
+
+  renderResearchMatrix(sc, mechs);
+  renderResearchChart(sc, mechs);
+}
+
+function renderResearchMatrix(sc, mechs) {
+  const cols = ["Mechanism","Exact","Peak Hot","Reduction %","Frozen","Reconciled","Late-after-evict","RSS (MB)","ev/s"];
+  let rows = "";
+  mechs.forEach(m => {
+    const d = sc.mechanisms[m];
+    const c = d.correctness || {};
+    rows += `
+      <tr>
+        <td style="color:${COLORS[m]}; font-weight:600">${d.label}</td>
+        <td><span class="${c.exact ? 'badge-exact' : 'badge-mismatch'}">${c.exact ? 'EXACT' : 'MISMATCH'}</span></td>
+        <td>${fmt(d.state.peak_hot_entries)}</td>
+        <td style="color:${d.state_reduction.peak_hot_reduction_percent > 0 ? 'var(--good)' : 'var(--muted)'}">${fmt(d.state_reduction.peak_hot_reduction_percent, '%')}</td>
+        <td>${fmt(d.state.frozen_emissions)}</td>
+        <td>${fmt(d.state.reconciled_events)}</td>
+        <td>${fmt(d.state.late_after_eviction)}</td>
+        <td>${fmt(d.runtime.peak_rss_kb / 1024, 'MB')}</td>
+        <td>${fmt(d.runtime.events_per_second)}</td>
+      </tr>`;
+  });
+  document.getElementById("researchMatrixTable").innerHTML = `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderResearchChart(sc, mechs) {
+  const canvas = document.getElementById("researchChart");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth;
+  const h = 260;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const pad = { l: 60, r: 15, t: 15, b: 30 };
+
+  const values = mechs.map(m => METRICS[metric].pick(sc.mechanisms[m]) || 0);
+  const maxV = Math.max(...values, 1);
+  const groups = mechs.length;
+  const bw = Math.min(46, (w - pad.l - pad.r) / groups * 0.72);
+
+  ctx.font = "11px sans-serif";
+  mechs.forEach((m, i) => {
+    const v = values[i];
+    const bx = pad.l + (w - pad.l - pad.r) / groups * (i + 0.5) - bw / 2;
+    const hh = (v / maxV) * (h - pad.t - pad.b);
+    const by = h - pad.b - hh;
+
+    ctx.fillStyle = COLORS[m] || "#38bdf8";
+    ctx.fillRect(bx, by, bw, hh);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.textAlign = "center";
+    ctx.fillText(fmt(v, METRICS[metric].unit), bx + bw / 2, by - 4);
+
+    ctx.fillStyle = "#64748b";
+    ctx.fillText(m, bx + bw / 2, h - 14);
+  });
+}
+
+// Initial calls
+checkSystem();
+loadProfile();
+loadResearchBundle();
+</script>
+</body>
+</html>
